@@ -1,0 +1,204 @@
+/* ===== GLOBAL ===== */
+body {
+  margin: 0;
+  font-family: "Inter", Arial, sans-serif;
+  background: linear-gradient(135deg, #eef2f3, #f9fafb);
+  color: #111827;
+}
+
+/* ===== DASHBOARD ===== */
+.dashboard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px 20px;
+}
+
+/* HEADER */
+.dashboard-header {
+  margin-bottom: 25px;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.dashboard-header p {
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+/* VIEW TOGGLE */
+.view-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.view-toggle button {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #0f766e;
+  background: white;
+  color: #0f766e;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.view-toggle button.active {
+  background: #0f766e;
+  color: white;
+}
+
+/* LOADING */
+.loading {
+  text-align: center;
+  font-size: 16px;
+}
+
+/* ===== CARD VIEW ===== */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.card p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+/* BADGES */
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 10px;
+}
+
+.badge.connection {
+  background: #0f766e;
+}
+
+.badge.complaint {
+  background: #dc2626;
+}
+
+/* TIME */
+.time {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 10px;
+}
+
+/* DELETE BUTTON */
+.card button,
+table button {
+  margin-top: 10px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.card button:hover,
+table button:hover {
+  opacity: 0.9;
+}
+
+/* ===== TABLE VIEW ===== */
+table {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  border-collapse: collapse;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+thead {
+  background: #0f766e;
+  color: white;
+}
+
+th,
+td {
+  padding: 14px 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+tbody tr:hover {
+  background: #eef2f3;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .view-toggle {
+    flex-direction: column;
+  }
+}
+
+.header-logo {
+  height: 70px;
+  width: auto;
+  object-fit: contain;
+}
+/* ===== HEADER ALIGNMENT FIX ===== */
+.dashboard-header {
+  margin-bottom: 25px;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+.header-text h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.header-text p {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #6b7280;
+}
