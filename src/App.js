@@ -4,104 +4,121 @@ import "./App.css";
 
 const API = "https://atipn-backend.onrender.com/api/inquiry";
 
-function App() {
+export default function App() {
   const [data, setData] = useState([]);
-  const [view, setView] = useState("card");
-  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState("table");
+  const [search, setSearch] = useState("");
+  const [date, setDate] = useState("");
 
-  // Fetch inquiries
+  /* FETCH DATA */
   const fetchData = async () => {
-    try {
-      const res = await fetch(API);
-      const json = await res.json();
-      setData(json);
-      setLoading(false);
-    } catch (err) {
-      console.error("Fetch error", err);
-    }
+    const res = await fetch(API);
+    const json = await res.json();
+
+    // latest on top (frontend-only fix)
+    const sorted = [...json].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    setData(sorted);
   };
 
-  // Delete inquiry
-  const deleteInquiry = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this inquiry?")) return;
-    await fetch(`${API}/${id}`, { method: "DELETE" });
-    fetchData();
-  };
-
-  // Auto refresh every 5 seconds
+  /* INITIAL LOAD */
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
   }, []);
 
-  const formatTime = (date) =>
-    new Date(date).toLocaleString("en-IN", {
-      dateStyle: "medium",
-      timeStyle: "short",
-    });
+  /* DELETE */
+  const deleteInquiry = async (id) => {
+    if (!window.confirm("Delete this inquiry?")) return;
+    await fetch(`${API}/${id}`, { method: "DELETE" });
+    setData((prev) => prev.filter((i) => i._id !== id));
+  };
+
+  /* FILTER */
+  const filtered = data.filter((d) => {
+    const text =
+      `${d.name} ${d.mobile} ${d.email} ${d.type}`.toLowerCase();
+    const matchesSearch = text.includes(search.toLowerCase());
+
+    const matchesDate = date
+      ? new Date(d.createdAt).toISOString().slice(0, 10) === date
+      : true;
+
+    return matchesSearch && matchesDate;
+  });
+
+  /* KPI */
+  const today = new Date().toISOString().slice(0, 10);
+  const todayTotal = data.filter(
+    (d) => d.createdAt.slice(0, 10) === today
+  ).length;
+  const connections = data.filter((d) => d.type === "connection").length;
+  const complaints = data.filter((d) => d.type === "complaint").length;
 
   return (
-    <div className="dashboard">
+    <div className="admin-dashboard">
       {/* HEADER */}
-      <div className="dashboard-header">
-  <div className="header-row">
-    <img
-      src={atinlogo}
-      alt="ATIN Logo"
-      className="header-logo"
-    />
-
-    <div className="header-text">
-      <h1>Admin Dashboard</h1>
-      <p>Live connection inquiries & complaints</p>
-    </div>
-  </div>
-</div>
-
-
-      {/* VIEW TOGGLE */}
-      <div className="view-toggle">
-        <button
-          className={view === "card" ? "active" : ""}
-          onClick={() => setView("card")}
-        >
-          Card View
-        </button>
-        <button
-          className={view === "table" ? "active" : ""}
-          onClick={() => setView("table")}
-        >
-          Table View
-        </button>
+      <div className="header">
+        <img src={atinlogo} alt="ATIN" />
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p className="subtitle">
+            Live connection inquiries & complaints
+          </p>
+        </div>
       </div>
 
-      {loading ? (
-        <p className="loading">Loading inquiries...</p>
-      ) : view === "card" ? (
-        /* CARD VIEW */
-        <div className="card-grid">
-          {data.map((d) => (
-            <div className="card" key={d._id}>
-              <h3>{d.name}</h3>
-
-              <span className={`badge ${d.type}`}>
-                {d.type === "connection" ? "New Connection" : "Complaint"}
-              </span>
-
-              <p><b>Mobile:</b> {d.mobile}</p>
-              <p><b>Email:</b> {d.email}</p>
-              {d.address && <p><b>Address:</b> {d.address}</p>}
-              {d.issue && <p><b>Issue:</b> {d.issue}</p>}
-
-              <p className="time">🕒 {formatTime(d.createdAt)}</p>
-
-              <button onClick={() => deleteInquiry(d._id)}>Delete</button>
-            </div>
-          ))}
+      {/* KPI ROW */}
+      <div className="kpi-row">
+        <div className="kpi-card">
+          <h2>{todayTotal}</h2>
+          <span>Today</span>
         </div>
-      ) : (
-        /* TABLE VIEW */
+        <div className="kpi-card">
+          <h2>{connections}</h2>
+          <span>Connections</span>
+        </div>
+        <div className="kpi-card">
+          <h2>{complaints}</h2>
+          <span>Complaints</span>
+        </div>
+      </div>
+
+      {/* CONTROLS */}
+      <div className="controls">
+        <input
+          placeholder="Search name, mobile, email, type..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+
+        <button className="export">Export Excel</button>
+
+        <div className="view-toggle">
+          <button
+            className={view === "card" ? "active" : ""}
+            onClick={() => setView("card")}
+          >
+            Card View
+          </button>
+          <button
+            className={view === "table" ? "active" : ""}
+            onClick={() => setView("table")}
+          >
+            Table View
+          </button>
+        </div>
+      </div>
+
+      {/* TABLE VIEW */}
+      {view === "table" && (
         <table>
           <thead>
             <tr>
@@ -115,28 +132,46 @@ function App() {
             </tr>
           </thead>
           <tbody>
-            {data.map((d) => (
+            {filtered.map((d) => (
               <tr key={d._id}>
                 <td>{d.name}</td>
                 <td>
-                  <span className={`badge ${d.type}`}>
-                    {d.type}
-                  </span>
+                  <span className={`badge ${d.type}`}>{d.type}</span>
                 </td>
                 <td>{d.mobile}</td>
                 <td>{d.email}</td>
                 <td>{d.address || d.issue}</td>
-                <td>{formatTime(d.createdAt)}</td>
+                <td>{new Date(d.createdAt).toLocaleString()}</td>
                 <td>
-                  <button onClick={() => deleteInquiry(d._id)}>Delete</button>
+                  <button className="del" onClick={() => deleteInquiry(d._id)}>
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       )}
+
+      {/* CARD VIEW */}
+      {view === "card" && (
+        <div className="card-grid">
+          {filtered.map((d) => (
+            <div className="card" key={d._id}>
+              <h3>{d.name}</h3>
+              <span className={`badge ${d.type}`}>{d.type}</span>
+              <p><b>Mobile:</b> {d.mobile}</p>
+              <p><b>Email:</b> {d.email}</p>
+              <p>{d.address || d.issue}</p>
+              <small>{new Date(d.createdAt).toLocaleString()}</small>
+              <br />
+              <button className="del" onClick={() => deleteInquiry(d._id)}>
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
-export default App;
