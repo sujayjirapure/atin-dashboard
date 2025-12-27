@@ -132,3 +132,62 @@ tbody tr:nth-child(even) {
   border-radius: 16px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.08);
 }
+/* KPI HEADER LINE */
+.kpi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 24px 0;
+}
+
+/* KPI ROW */
+.kpi-row {
+  display: flex;
+  gap: 20px;
+}
+
+/* KPI CARD */
+.kpi-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px 26px;
+  min-width: 140px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.kpi-card h2 {
+  color: #0f766e;
+  font-size: 28px;
+  margin: 0;
+}
+
+.kpi-card span {
+  font-size: 14px;
+  color: #475569;
+}
+
+/* REFRESH BUTTON */
+.refresh-btn {
+  height: 44px;
+  padding: 0 28px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  background: linear-gradient(135deg, #0f766e, #0d9488);
+  color: white;
+  box-shadow: 0 6px 14px rgba(15, 118, 110, 0.3);
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(15, 118, 110, 0.4);
+}
+
+.refresh-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}

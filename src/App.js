@@ -2,37 +2,61 @@ import React, { useEffect, useState } from "react";
 import atinlogo from "./atinlogo.jpg";
 import "./App.css";
 
-const API = "https://atipn-backend.onrender.com/api/inquiry";
+const API = "https://atin-dashboard-back.onrender.com/api/inquiry";
 
 export default function App() {
   const [data, setData] = useState([]);
   const [view, setView] = useState("table");
   const [search, setSearch] = useState("");
   const [date, setDate] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [lastFetch, setLastFetch] = useState(0);
 
-  /* FETCH DATA */
-  const fetchData = async () => {
-    const res = await fetch(API);
-    const json = await res.json();
-
-    // latest on top (frontend-only fix)
-    const sorted = [...json].sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-
-    setData(sorted);
-  };
-
-  /* INITIAL LOAD */
+  /* LOAD FROM CACHE (NO API CALL) */
   useEffect(() => {
-    fetchData();
+    const cached = localStorage.getItem("dashboardData");
+    if (cached) {
+      setData(JSON.parse(cached));
+    }
   }, []);
+
+  /* MANUAL FETCH */
+  const fetchData = async () => {
+    // cooldown: 15 sec
+    if (Date.now() - lastFetch < 15000) {
+      alert("Please wait before refreshing again");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setLastFetch(Date.now());
+
+      const res = await fetch(API);
+      const json = await res.json();
+
+      const sorted = [...json].sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setData(sorted);
+      localStorage.setItem("dashboardData", JSON.stringify(sorted));
+    } catch (err) {
+      alert("Failed to fetch data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* DELETE */
   const deleteInquiry = async (id) => {
     if (!window.confirm("Delete this inquiry?")) return;
+
     await fetch(`${API}/${id}`, { method: "DELETE" });
-    setData((prev) => prev.filter((i) => i._id !== id));
+
+    const updated = data.filter((i) => i._id !== id);
+    setData(updated);
+    localStorage.setItem("dashboardData", JSON.stringify(updated));
   };
 
   /* FILTER */
@@ -64,28 +88,40 @@ export default function App() {
         <div>
           <h1>Admin Dashboard</h1>
           <p className="subtitle">
-            Live connection inquiries & complaints
+            Connection inquiries & complaints
           </p>
         </div>
       </div>
+{/* KPI ROW */}
+<div className="kpi-header">
+  <div className="kpi-row">
+    <div className="kpi-card">
+      <h2>{todayTotal}</h2>
+      <span>Today</span>
+    </div>
+    <div className="kpi-card">
+      <h2>{connections}</h2>
+      <span>Connections</span>
+    </div>
+    <div className="kpi-card">
+      <h2>{complaints}</h2>
+      <span>Complaints</span>
+    </div>
+  </div>
 
-      {/* KPI ROW */}
-      <div className="kpi-row">
-        <div className="kpi-card">
-          <h2>{todayTotal}</h2>
-          <span>Today</span>
-        </div>
-        <div className="kpi-card">
-          <h2>{connections}</h2>
-          <span>Connections</span>
-        </div>
-        <div className="kpi-card">
-          <h2>{complaints}</h2>
-          <span>Complaints</span>
-        </div>
-      </div>
+  {/* REFRESH BUTTON */}
+  <button
+    className="refresh-btn"
+    onClick={fetchData}
+    disabled={loading}
+  >
+    {loading ? "Refreshing..." : "Refresh"}
+  </button>
+</div>
+
 
       {/* CONTROLS */}
+      
       <div className="controls">
         <input
           placeholder="Search name, mobile, email, type..."
@@ -99,7 +135,7 @@ export default function App() {
           onChange={(e) => setDate(e.target.value)}
         />
 
-        <button className="export">Export Excel</button>
+        
 
         <div className="view-toggle">
           <button
